@@ -116,11 +116,11 @@ class Job(Base):
         back_populates="job",
         cascade="all, delete-orphan",
         passive_deletes=True,
-        order_by="job_notes.created_at",
+        order_by="JobNote.created_at",
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         back_populates="job",
         cascade="all, delete-orphan",
         passive_deletes=True,
-        order_by="reminders.remind_at",
+        order_by="Reminder.remind_at",
     )

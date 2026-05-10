@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     APP_NAME: str = "Job Tracker API"
     DATABASE_URL: str
+    JWT_SECRET: str
+    JWT_EXPIRY_MINUTES: int = 60
+    GOOGLE_CLIENT_ID: str
 
 
 @lru_cache

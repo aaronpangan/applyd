@@ -1,2 +1,7 @@
 .vscode/
 AGENT.md
+CLAUDE.md
+backend-report.md
+routes.md
+*.postman_collection.json
+.claude
