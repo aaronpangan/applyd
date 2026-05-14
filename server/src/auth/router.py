@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import Settings, get_settings
@@ -16,8 +16,24 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def verify_google_token(
     payload: schemas.GoogleVerifyRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+    settings: Annotated[Settings, Depends(get_settings)],
 ):
-    return await service.verify_google_token(db, payload)
+    token_response = await service.verify_google_token(db, payload)
+    response.set_cookie(
+        key="access_token",
+        value=token_response.access_token,
+        httponly=True,
+        samesite="lax",
+        path="/",
+        max_age=settings.JWT_EXPIRY_MINUTES * 60,
+    )
+    return token_response
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", path="/", samesite="lax", httponly=True)
 
 
 @router.get("/me", response_model=schemas.UserResponse)

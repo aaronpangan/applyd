@@ -45,3 +45,8 @@ Thumbs.db
 .idea/
 *.swp
 
+# Agent / scratch docs
+/CLAUDE.md
+/routes.md
+/backend-report.md
+
