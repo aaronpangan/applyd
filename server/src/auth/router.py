@@ -51,3 +51,14 @@ async def dev_token(
     if settings.ENV != "development":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return await service.create_dev_token(db)
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    en(db)

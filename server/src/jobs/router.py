@@ -46,12 +46,25 @@ async def get_filter_options(
     return await service.get_filter_options(db, current_user.id)
 
 
-@router.get("/export/csv", response_class=StreamingResponse)
-async def export_csv(
+@router.get("/export/xlsx", response_class=StreamingResponse)
+async def export_xlsx(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    job_status: JobStatus | None = Query(None, alias="status"),
+    priority: JobPriority | None = Query(None),
+    work_setup: WorkSetup | None = Query(None),
+    is_archived: bool = Query(False),
+    search: str | None = Query(None),
 ):
-    return await service.export_csv(db, current_user.id)
+    return await service.export_xlsx(
+        db,
+        current_user.id,
+        status=job_status,
+        priority=priority,
+        work_setup=work_setup,
+        is_archived=is_archived,
+        search=search,
+    )
 
 
 @router.patch("/bulk-archive", response_model=list[schemas.JobResponse])

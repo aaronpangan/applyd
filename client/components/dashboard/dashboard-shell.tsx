@@ -115,7 +115,11 @@ export function DashboardShell() {
   const handleSelectRow = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      checked ? next.add(id) : next.delete(id);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
       return next;
     });
   };
@@ -165,15 +169,22 @@ export function DashboardShell() {
     refreshStats();
   };
 
-  const handleJobCreated = (_job: Job) => {
+  const handleJobCreated = () => {
     startTransition(async () => {
       await fetchJobs(filters);
     });
     refreshStats();
   };
 
-  const handleExportCsv = () => {
-    window.open("/api/jobs/export/csv", "_blank");
+  const handleExportXlsx = () => {
+    // Mirror the active filters (minus pagination) so the file matches the table.
+    const params = new URLSearchParams();
+    if (filters.status) params.set("status", filters.status);
+    if (filters.priority) params.set("priority", filters.priority);
+    if (filters.work_setup) params.set("work_setup", filters.work_setup);
+    if (filters.search) params.set("search", filters.search);
+    params.set("is_archived", String(filters.is_archived));
+    window.open(`/api/jobs/export/xlsx?${params}`, "_blank");
   };
 
   return (
@@ -193,7 +204,7 @@ export function DashboardShell() {
             filterOptions={filterOptions}
             onFiltersChange={patchFilters}
             onAddJob={() => setIsAddOpen(true)}
-            onExportCsv={handleExportCsv}
+            onExportXlsx={handleExportXlsx}
           />
 
           {selectedIds.size > 0 && (
@@ -223,6 +234,7 @@ export function DashboardShell() {
       </main>
 
       <JobDetailModal
+        key={detailJob?.id ?? "closed"}
         job={detailJob}
         onClose={() => setDetailJob(null)}
         onJobUpdate={handleJobUpdate}

@@ -9,7 +9,7 @@ interface ToolbarProps {
   filterOptions: FilterOptions | null;
   onFiltersChange: (patch: Partial<Filters>) => void;
   onAddJob: () => void;
-  onExportCsv: () => void;
+  onExportXlsx: () => void;
 }
 
 const selectClass =
@@ -29,7 +29,7 @@ export function Toolbar({
   filterOptions,
   onFiltersChange,
   onAddJob,
-  onExportCsv,
+  onExportXlsx,
 }: ToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -147,11 +147,11 @@ export function Toolbar({
       {/* Export */}
       <button
         type="button"
-        onClick={onExportCsv}
+        onClick={onExportXlsx}
         className="inline-flex h-8 items-center gap-1.5 rounded-md border-hair border-border bg-background px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <IconDownload size={14} stroke={1.75} />
-        Export CSV
+        Export Excel
       </button>
 
       {/* Add job */}

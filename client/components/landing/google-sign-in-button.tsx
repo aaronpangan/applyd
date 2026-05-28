@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
+import { GoogleLogo } from "./google-logo";
+
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 
 // Inner component — only rendered when GoogleOAuthProvider is present

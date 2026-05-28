@@ -6,19 +6,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .auth.router import router as auth_router
+from .config import settings
 from .dashboard.router import router as dashboard_router
 from .database import engine
 from .jobs.router import router as jobs_router
 from .notes.router import router as notes_router
 from .reminders.router import router as reminders_router
+from .scheduler import start_scheduler, stop_scheduler
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    start_scheduler(settings.REMINDER_TICK_SECONDS)
     logger.info("Database connected")
     yield
+    stop_scheduler()
     await engine.dispose()
     logger.info("Database disconnected")
 

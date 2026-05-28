@@ -52,14 +52,10 @@ export function JobDetailModal({
   const [editValue, setEditValue] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
+  // The parent remounts this modal per job (via `key`), so state always starts
+  // fresh — no need to reset it here, just load the job's notes + reminders.
   useEffect(() => {
     if (!job) return;
-    setNotes([]);
-    setReminders([]);
-    setNoteText("");
-    setReminderAt("");
-    setReminderMsg("");
-
     Promise.all([
       fetch(`/api/jobs/${job.id}/notes`, { credentials: "include" }).then(
         (r) => r.json(),
@@ -71,7 +67,7 @@ export function JobDetailModal({
       setNotes(Array.isArray(n) ? n : []);
       setReminders(Array.isArray(r) ? r : []);
     });
-  }, [job?.id]);
+  }, [job]);
 
   if (!job) return null;
 

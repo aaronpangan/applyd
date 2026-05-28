@@ -1,15 +1,19 @@
-import csv
 import io
 import uuid
 from datetime import datetime, timezone
 
 from fastapi.responses import StreamingResponse
-from sqlalchemy import func, or_, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Job
 from . import schemas
+from .excel import build_export_workbook
 from .exceptions import JobNotArchived, JobNotFound
+
+_XLSX_MEDIA_TYPE = (
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
 
 async def _get_job_or_404(
@@ -24,6 +28,33 @@ async def _get_job_or_404(
     return job
 
 
+def _filtered_jobs_query(
+    user_id: uuid.UUID,
+    *,
+    status=None,
+    priority=None,
+    work_setup=None,
+    is_archived: bool = False,
+    search: str | None = None,
+) -> Select:
+    """Shared WHERE-clause builder used by both listing and export."""
+    query = select(Job).where(
+        Job.user_id == user_id, Job.is_archived.is_(is_archived)
+    )
+    if status is not None:
+        query = query.where(Job.status == status)
+    if priority is not None:
+        query = query.where(Job.priority == priority)
+    if work_setup is not None:
+        query = query.where(Job.work_setup == work_setup)
+    if search:
+        term = f"%{search}%"
+        query = query.where(
+            or_(Job.company.ilike(term), Job.position.ilike(term))
+        )
+    return query
+
+
 async def list_jobs(
     db: AsyncSession,
     user_id: uuid.UUID,
@@ -36,17 +67,14 @@ async def list_jobs(
     page: int = 1,
     limit: int = 20,
 ) -> schemas.JobListResponse:
-    base = select(Job).where(Job.user_id == user_id, Job.is_archived.is_(is_archived))
-
-    if status is not None:
-        base = base.where(Job.status == status)
-    if priority is not None:
-        base = base.where(Job.priority == priority)
-    if work_setup is not None:
-        base = base.where(Job.work_setup == work_setup)
-    if search:
-        term = f"%{search}%"
-        base = base.where(or_(Job.company.ilike(term), Job.position.ilike(term)))
+    base = _filtered_jobs_query(
+        user_id,
+        status=status,
+        priority=priority,
+        work_setup=work_setup,
+        is_archived=is_archived,
+        search=search,
+    )
 
     count_result = await db.execute(
         select(func.count()).select_from(base.subquery())
@@ -98,34 +126,43 @@ async def get_filter_options(
     )
 
 
-async def export_csv(db: AsyncSession, user_id: uuid.UUID) -> StreamingResponse:
-    result = await db.execute(
-        select(Job)
-        .where(Job.user_id == user_id, Job.is_archived.is_(False))
-        .order_by(Job.applied_at.desc())
-    )
+async def export_xlsx(
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    *,
+    status=None,
+    priority=None,
+    work_setup=None,
+    is_archived: bool = False,
+    search: str | None = None,
+) -> StreamingResponse:
+    """Stream the filtered jobs as a styled .xlsx workbook.
+
+    Honours the same filters as ``list_jobs`` (minus pagination) so the file
+    matches exactly what the dashboard table is showing.
+    """
+    query = _filtered_jobs_query(
+        user_id,
+        status=status,
+        priority=priority,
+        work_setup=work_setup,
+        is_archived=is_archived,
+        search=search,
+    ).order_by(Job.applied_at.desc())
+    result = await db.execute(query)
     jobs = result.scalars().all()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow([
-        "company", "position", "status", "priority", "work_setup",
-        "location", "industry", "salary_min", "salary_max", "salary_currency",
-        "applied_at", "link", "email_contact", "job_description", "created_at",
-    ])
-    for job in jobs:
-        writer.writerow([
-            job.company, job.position, job.status.value, job.priority.value,
-            job.work_setup.value, job.location, job.industry,
-            job.salary_min, job.salary_max, job.salary_currency,
-            job.applied_at, job.link, job.email_contact, job.job_description,
-            job.created_at,
-        ])
+    workbook = build_export_workbook(jobs, is_archived=is_archived)
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
 
+    variant = "archived" if is_archived else "active"
+    filename = f"applyd-{variant}-jobs-{datetime.now(timezone.utc):%Y-%m-%d}.xlsx"
     return StreamingResponse(
-        iter([output.getvalue().encode("utf-8")]),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=jobs.csv"},
+        buffer,
+        media_type=_XLSX_MEDIA_TYPE,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 

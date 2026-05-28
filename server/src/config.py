@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     JWT_EXPIRY_MINUTES: int = 60
     GOOGLE_CLIENT_ID: str
 
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "Applyd <onboarding@resend.dev>"
+    REMINDER_TICK_SECONDS: int = 60
+
 
 @lru_cache
 def get_settings() -> Settings:
