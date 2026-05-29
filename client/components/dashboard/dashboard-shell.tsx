@@ -191,21 +191,37 @@ export function DashboardShell() {
     <>
       <DashboardNavbar user={user} />
 
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-8 py-8">
-        <div className="flex flex-col gap-6">
-          <StatCards
-            stats={stats}
-            activeFilter={filters.status}
-            onFilterClick={handleStatClick}
-          />
+      <main className="mx-auto w-full max-w-300 flex-1 px-8 py-10">
+        <div className="flex flex-col gap-8">
+          {/* Page header */}
+          <div className="reveal flex items-end justify-between">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                My Applications
+              </h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Track and manage your job search
+              </p>
+            </div>
+          </div>
 
-          <Toolbar
-            filters={filters}
-            filterOptions={filterOptions}
-            onFiltersChange={patchFilters}
-            onAddJob={() => setIsAddOpen(true)}
-            onExportXlsx={handleExportXlsx}
-          />
+          <div className="reveal reveal-2">
+            <StatCards
+              stats={stats}
+              activeFilter={filters.status}
+              onFilterClick={handleStatClick}
+            />
+          </div>
+
+          <div className="reveal reveal-3">
+            <Toolbar
+              filters={filters}
+              filterOptions={filterOptions}
+              onFiltersChange={patchFilters}
+              onAddJob={() => setIsAddOpen(true)}
+              onExportXlsx={handleExportXlsx}
+            />
+          </div>
 
           {selectedIds.size > 0 && (
             <BulkActionBar
@@ -217,19 +233,21 @@ export function DashboardShell() {
             />
           )}
 
-          <JobsTable
-            jobs={jobs}
-            total={total}
-            totalPages={totalPages}
-            page={filters.page}
-            loading={isPending}
-            isArchived={filters.is_archived}
-            selectedIds={selectedIds}
-            onSelectAll={handleSelectAll}
-            onSelectRow={handleSelectRow}
-            onRowClick={setDetailJob}
-            onPageChange={(p) => patchFilters({ page: p })}
-          />
+          <div className="reveal reveal-4">
+            <JobsTable
+              jobs={jobs}
+              total={total}
+              totalPages={totalPages}
+              page={filters.page}
+              loading={isPending}
+              isArchived={filters.is_archived}
+              selectedIds={selectedIds}
+              onSelectAll={handleSelectAll}
+              onSelectRow={handleSelectRow}
+              onRowClick={setDetailJob}
+              onPageChange={(p) => patchFilters({ page: p })}
+            />
+          </div>
         </div>
       </main>
 

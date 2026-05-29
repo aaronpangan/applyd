@@ -27,11 +27,11 @@ interface StatCardsProps {
 export function StatCards({ stats, activeFilter, onFilterClick }: StatCardsProps) {
   if (!stats) {
     return (
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="h-[88px] animate-pulse rounded-md bg-muted"
+            className="h-28 animate-pulse rounded-xl bg-muted"
           />
         ))}
       </div>
@@ -68,9 +68,16 @@ export function StatCards({ stats, activeFilter, onFilterClick }: StatCardsProps
     },
   ];
 
+  const accentColors = [
+    "border-t-sky-400",
+    "border-t-amber-400",
+    "border-t-violet-400",
+    "border-t-emerald-400",
+  ];
+
   return (
-    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-      {cards.map((card) => {
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {cards.map((card, idx) => {
         const isActive =
           card.filterStatus !== undefined &&
           activeFilter === card.filterStatus;
@@ -85,19 +92,20 @@ export function StatCards({ stats, activeFilter, onFilterClick }: StatCardsProps
                 : undefined
             }
             className={[
-              "rounded-md bg-muted p-4 text-left transition-colors",
+              "rounded-xl bg-card p-5 text-left transition-all duration-200 border-t-2",
+              accentColors[idx],
               card.filterStatus
-                ? "cursor-pointer hover:border-border"
+                ? "cursor-pointer hover:shadow-md dark:hover:shadow-none dark:hover:bg-accent/30"
                 : "cursor-default",
               isActive
-                ? "border border-foreground"
-                : "border border-transparent",
+                ? "border border-indigo-500 ring-1 ring-indigo-500/30 shadow-sm"
+                : "border border-border/60",
             ].join(" ")}
           >
-            <div className="text-2xl font-medium tabular-nums tracking-tight">
+            <div className="text-4xl font-semibold tabular-nums tracking-tighter">
               {card.value}
             </div>
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-2 text-sm font-medium text-foreground">
               {card.label}
             </div>
             <div className="text-[11px] text-muted-foreground/60">

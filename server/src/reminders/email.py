@@ -128,6 +128,7 @@ def _build_text(reminder: Reminder) -> str:
 
 
 async def _send_with_retry(params: dict, attempts: int = 3) -> None:
+    logger.info("Sending email — from=%r to=%r subject=%r", params.get("from"), params.get("to"), params.get("subject"))
     delay = 1.0
     last_exc: Exception | None = None
     for attempt in range(1, attempts + 1):
@@ -149,9 +150,10 @@ async def _send_with_retry(params: dict, attempts: int = 3) -> None:
 async def send_reminder_email(reminder: Reminder) -> None:
     job = reminder.job
     user = reminder.user
+    to = [settings.RESEND_OVERRIDE_TO] if settings.RESEND_OVERRIDE_TO else [user.email]
     params = {
         "from": settings.RESEND_FROM_EMAIL,
-        "to": [user.email],
+        "to": to,
         "subject": f"Reminder: {job.position} at {job.company}",
         "html": _build_html(reminder),
         "text": _build_text(reminder),

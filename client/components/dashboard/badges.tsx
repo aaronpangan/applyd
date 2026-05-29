@@ -38,11 +38,12 @@ const workSetupStyles: Record<WorkSetup, string> = {
   onsite: "bg-stone-100 text-stone-700 dark:bg-stone-900 dark:text-stone-300",
 };
 
-const pill = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
+const pill = "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium";
 
 export function StatusBadge({ status }: { status: JobStatus }) {
   return (
     <span className={cn(pill, statusStyles[status])}>
+      <span className="size-1.5 rounded-full bg-current opacity-70" />
       {statusLabels[status]}
     </span>
   );

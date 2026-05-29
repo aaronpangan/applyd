@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "Applyd <onboarding@resend.dev>"
+    RESEND_OVERRIDE_TO: str = ""  # dev only: redirect all emails to this address
     REMINDER_TICK_SECONDS: int = 60
 
 
